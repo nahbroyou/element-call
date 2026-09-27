@@ -228,12 +228,21 @@ function setUpMenu() {
   );
 }
 
-/** The configured Element Call URL: `--url=`, then $ELEMENT_CALL_URL, then the saved one. */
+/**
+ * The Element Call URL: `--url=`, then $ELEMENT_CALL_URL, then the one saved
+ * from the setup page, then the one baked in at build time.
+ */
 function elementCallUrl() {
   const flag = process.argv.find((a) => a.startsWith("--url="));
   if (flag) return flag.slice("--url=".length);
   if (process.env.ELEMENT_CALL_URL) return process.env.ELEMENT_CALL_URL;
-  return readConfig().url ?? null;
+  return readConfig().url ?? bakedInUrl();
+}
+
+/** Set by the release build via `-c.extraMetadata.defaultElementCallUrl`. */
+function bakedInUrl() {
+  const { defaultElementCallUrl } = require("./package.json");
+  return defaultElementCallUrl || null;
 }
 
 function isElementCallUrl(url) {

@@ -1,0 +1,133 @@
+name: Desktop app release
+
+# Builds the push to talk desktop app (desktop/) for Windows and macOS and
+# attaches the installers to a GitHub release.
+#
+# Release: push a tag like `desktop-v0.1.0`. The version comes from the tag.
+# Try a build without releasing: Actions → Desktop app release → Run workflow
+# (the installers are then downloadable from the run's Artifacts).
+#
+# Optional repository settings (Settings → Secrets and variables → Actions):
+#   Variable DEFAULT_ELEMENT_CALL_URL  URL the app opens without asking,
+#                                      e.g. https://call-ptt.example.com
+#   macOS signing + notarization (without these the app is ad-hoc signed):
+#     Secret MAC_CERT_P12_BASE64       Developer ID Application cert, base64
+#     Secret MAC_CERT_PASSWORD
+#     Secret APPLE_ID
+#     Secret APPLE_APP_SPECIFIC_PASSWORD
+#     Secret APPLE_TEAM_ID
+
+on:
+  push:
+    tags: ["desktop-v*"]
+  workflow_dispatch: {}
+
+permissions: {}
+
+jobs:
+  build:
+    name: Build (${{ matrix.name }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: Windows
+            os: windows-latest
+            target: --win
+          - name: macOS
+            os: macos-latest
+            target: --mac
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: read
+    defaults:
+      run:
+        shell: bash
+        working-directory: desktop
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
+        with:
+          node-version: 22
+
+      - name: Install
+        run: npm install --no-audit --no-fund
+
+      - name: Test
+        run: npm test
+
+      - name: Set version from tag
+        if: startsWith(github.ref, 'refs/tags/desktop-v')
+        env:
+          TAG: ${{ github.ref_name }}
+        run: npm version --no-git-tag-version --allow-same-version "${TAG#desktop-v}"
+
+      - name: Build installers
+        env:
+          DEFAULT_URL: ${{ vars.DEFAULT_ELEMENT_CALL_URL }}
+          CSC_LINK: ${{ matrix.name == 'macOS' && secrets.MAC_CERT_P12_BASE64 || '' }}
+          CSC_KEY_PASSWORD: ${{ matrix.name == 'macOS' && secrets.MAC_CERT_PASSWORD || '' }}
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          TARGET: ${{ matrix.target }}
+        run: |
+          args=("$TARGET" --publish never)
+          if [[ -n "$DEFAULT_URL" ]]; then
+            args+=("-c.extraMetadata.defaultElementCallUrl=$DEFAULT_URL")
+          fi
+          if [[ "$TARGET" == "--mac" && -z "$CSC_LINK" ]]; then
+            # No certificate: sign ad hoc, which Apple Silicon needs to run it
+            # at all, and don't look for an identity in the keychain.
+            export CSC_IDENTITY_AUTO_DISCOVERY=false
+            args+=("-c.mac.identity=-")
+          fi
+          if [[ "$TARGET" == "--win" ]]; then
+            export CSC_IDENTITY_AUTO_DISCOVERY=false
+          fi
+          npx electron-builder "${args[@]}"
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: installers-${{ matrix.name }}
+          path: |
+            desktop/dist/*.exe
+            desktop/dist/*.dmg
+          if-no-files-found: error
+
+  release:
+    name: Publish release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/desktop-v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          pattern: installers-*
+          merge-multiple: true
+          path: installers
+
+      - uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
+        with:
+          name: Element Call desktop ${{ github.ref_name }}
+          files: installers/*
+          body: |
+            Element Call with system-wide push to talk.
+
+            **Windows:** download `Element-Call-…-win-x64.exe` and run it. If
+            SmartScreen says "Windows protected your PC", click
+            **More info → Run anyway**.
+
+            **macOS:** download the `mac-arm64` dmg for Apple Silicon (M1 and
+            later) or `mac-x64` for Intel, and drag Element Call to
+            Applications. If macOS says the app is damaged or can't be
+            checked, run this once in Terminal:
+            `xattr -dr com.apple.quarantine "/Applications/Element Call.app"`.
+            To use push to talk while another app is in front, allow Element
+            Call under System Settings → Privacy & Security → Accessibility,
+            then reopen it.

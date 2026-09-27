@@ -24,6 +24,8 @@
   },
   "build": {
     "appId": "io.element.call.desktop.ptt",
+    "productName": "Element Call",
+    "artifactName": "Element-Call-${version}-${os}-${arch}.${ext}",
     "files": [
       "main.js",
       "preload.js",
@@ -39,13 +41,33 @@
       "extendInfo": {
         "NSMicrophoneUsageDescription": "Element Call uses your microphone for voice calls.",
         "NSCameraUsageDescription": "Element Call uses your camera for video calls."
-      }
+      },
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64",
+            "x64"
+          ]
+        }
+      ]
     },
     "win": {
-      "target": "nsis"
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
     },
     "linux": {
       "target": "AppImage"
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false
     }
   }
 }

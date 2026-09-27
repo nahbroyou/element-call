@@ -26,7 +26,26 @@ Then in a call: **Settings → Audio → Push to talk**, choose your key or mous
 button. The settings page says "works even while another app is in front" when
 the system-wide hook is available.
 
-## Build an installer
+## Release installers with GitHub Actions
+
+`.github/workflows/desktop-release.yaml` builds the Windows `.exe` and macOS
+`.dmg` files (Apple Silicon and Intel) on GitHub's machines and attaches them to a release:
+
+```sh
+git tag desktop-v0.1.0
+git push origin desktop-v0.1.0
+```
+
+Share `https://github.com/<you>/element-call/releases/latest`. To try a build
+without releasing, run the workflow by hand from the Actions tab and download
+the installers from the run's Artifacts.
+
+Set the repository variable `DEFAULT_ELEMENT_CALL_URL` (Settings → Secrets and
+variables → Actions → Variables) so the app opens your server without asking.
+Mac signing and notarization secrets are optional; they are listed at the top
+of the workflow.
+
+## Build an installer locally
 
 ```sh
 npm run dist:mac      # .dmg (unsigned unless you configure signing)
