@@ -13,6 +13,7 @@ import { calculateInitialMuteState } from "./initialMuteState";
 import { useMediaDevices } from "../MediaDevicesContext";
 import { useHostBridge } from "../HostBridge";
 import { useUrlParams } from "../UrlParams";
+import { pushToTalkEnabled } from "../settings/settings";
 
 /**
  * Audio and video mute state, kept in step with the host.
@@ -32,15 +33,20 @@ export function useMuteStates(): MuteStates | null {
 
   useEffect(() => {
     const scope = new ObservableScope();
+    const initialMuteState = calculateInitialMuteState(
+      urlParams.skipLobby,
+      urlParams.callIntent,
+      hostBridge.allowJoinUnmutedViaIntent,
+    );
     setMuteStates(
       new MuteStates(
         scope,
         devices,
-        calculateInitialMuteState(
-          urlParams.skipLobby,
-          urlParams.callIntent,
-          hostBridge.allowJoinUnmutedViaIntent,
-        ),
+        {
+          ...initialMuteState,
+          audioEnabled:
+            initialMuteState.audioEnabled && !pushToTalkEnabled.getValue(),
+        },
         hostBridge,
       ),
     );

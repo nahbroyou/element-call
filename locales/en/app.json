@@ -174,6 +174,24 @@
   "mute_microphone_button_label": "Mute microphone",
   "participant_count_one": "{{count, number}}",
   "participant_count_other": "{{count, number}}",
+  "push_to_talk": {
+    "binding": {
+      "mouse_middle": "Middle mouse button",
+      "mouse_numbered": "Mouse {{n}}",
+      "mouse_right": "Right mouse button"
+    },
+    "binding_label": "Shortcut",
+    "cancel_button": "Cancel",
+    "capture_prompt": "Press a key or mouse button…",
+    "change_binding_button": "Change",
+    "enable_description": "Your microphone stays muted until you hold down the shortcut.",
+    "enable_label": "Push to talk",
+    "milliseconds": "{{ms}} ms",
+    "release_delay_description": "How long your microphone stays open after you let go, so the end of what you say isn't cut off.",
+    "release_delay_label": "Release delay",
+    "scope_global": "The shortcut works even while another app is in front.",
+    "scope_window": "The shortcut only works while this window is focused. Use the Element Call desktop app for a shortcut that works everywhere."
+  },
   "qr_code": "QR Code",
   "rageshake_button_error_caption": "Retry sending logs",
   "rageshake_request_modal": {

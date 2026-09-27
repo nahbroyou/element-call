@@ -12,6 +12,10 @@ import { PosthogAnalytics } from "../analytics/PosthogAnalytics";
 import { type Behavior } from "../state/Behavior";
 import { useBehavior } from "../useBehavior";
 import { MatrixRTCMode } from "../config/ConfigOptions";
+import {
+  defaultPushToTalkBinding,
+  type PushToTalkBinding,
+} from "../pushToTalk/binding";
 
 export class Setting<T> {
   public constructor(
@@ -135,6 +139,26 @@ export const soundEffectVolume = new Setting<number>(
 );
 
 export const muteAllAudio = new Setting<boolean>("mute-all-audio", false);
+
+/**
+ * Push to talk: the microphone stays muted and only opens while the binding
+ * is held.
+ */
+export const pushToTalkEnabled = new Setting<boolean>(
+  "push-to-talk-enabled",
+  false,
+);
+
+export const pushToTalkBinding = new Setting<PushToTalkBinding>(
+  "push-to-talk-binding",
+  defaultPushToTalkBinding,
+);
+
+/** How long the microphone stays open after the binding is released. */
+export const pushToTalkReleaseDelayMs = new Setting<number>(
+  "push-to-talk-release-delay",
+  100,
+);
 
 export const alwaysShowSelf = new Setting<boolean>("always-show-self", true);
 

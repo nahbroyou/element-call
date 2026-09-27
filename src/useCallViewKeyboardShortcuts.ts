@@ -15,6 +15,10 @@ import {
   ReactionSet,
   ReactionsRowSize,
 } from "./reactions";
+import {
+  matchesKeyboardEvent,
+  type PushToTalkBinding,
+} from "./pushToTalk/binding";
 
 /**
  * Whether what has focus is something a key press belongs to, rather than
@@ -26,7 +30,7 @@ import {
  * is the body for the standalone app but a container inside the host's page
  * for the component.
  */
-const focusIsClaimed = (): boolean => {
+export const focusIsClaimed = (): boolean => {
   const active = document.activeElement;
   if (active === null || active === document.body) return false;
   if (active.closest("dialog, [role='dialog']") !== null) return true;
@@ -78,6 +82,8 @@ const KeyToReactionMap: Record<string, ReactionOption> = Object.fromEntries(
  * @param setAudioEnabled - push to talk behavior controlled via (space)
  * @param sendReaction - triggered on (1,2,3,...)
  * @param toggleHandRaised - triggered on (h)
+ * @param pushToTalkBinding - a key claimed by push to talk, which no shortcut
+ *   here should also answer to
  * Additionally this method listens to the (escape) key to trigger the onBackButtonPressed callback, which is used to navigate to pip in the native app.
  *
  * Note: This function incorrectly assumes that there is a camera and microphone, which is not always the case.
@@ -89,6 +95,7 @@ export function useCallViewKeyboardShortcuts(
   setAudioEnabled: ((enabled: boolean) => void) | null,
   sendReaction: ((reaction: ReactionOption) => void) | null,
   toggleHandRaised: (() => void) | null,
+  pushToTalkBinding: PushToTalkBinding | null = null,
 ): void {
   const spacebarHeld = useRef(false);
   const rootElement = useRootElement();
@@ -104,6 +111,8 @@ export function useCallViewKeyboardShortcuts(
       (event: KeyboardEvent) => {
         logger.info("Keydown event", event);
         if (focusIsClaimed()) return;
+        if (pushToTalkBinding && matchesKeyboardEvent(pushToTalkBinding, event))
+          return;
         if (event.altKey || event.ctrlKey || event.metaKey || event.shiftKey)
           return;
 
@@ -136,6 +145,7 @@ export function useCallViewKeyboardShortcuts(
         setAudioEnabled,
         sendReaction,
         toggleHandRaised,
+        pushToTalkBinding,
       ],
     ),
     // Because this is set on an ancestor, to prevent shortcuts from activating
@@ -150,12 +160,14 @@ export function useCallViewKeyboardShortcuts(
     useCallback(
       (event: KeyboardEvent) => {
         if (focusIsClaimed() || !mayReceiveSpaceKeyEvents()) return;
+        if (pushToTalkBinding && matchesKeyboardEvent(pushToTalkBinding, event))
+          return;
         if (event.key === " ") {
           spacebarHeld.current = false;
           setAudioEnabled?.(false);
         }
       },
-      [setAudioEnabled],
+      [setAudioEnabled, pushToTalkBinding],
     ),
   );
 
@@ -166,7 +178,7 @@ export function useCallViewKeyboardShortcuts(
     useCallback(() => {
       if (spacebarHeld.current) {
         spacebarHeld.current = false;
-        setAudioEnabled?.(true);
+        setAudioEnabled?.(false);
       }
     }, [setAudioEnabled, spacebarHeld]),
   );

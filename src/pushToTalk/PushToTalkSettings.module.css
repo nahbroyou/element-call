@@ -1,0 +1,42 @@
+/*
+Copyright 2026 Element Creations Ltd.
+
+SPDX-License-Identifier: AGPL-3.0-only OR LicenseRef-Element-Commercial
+Please see LICENSE in the repository root for full details.
+*/
+
+.pushToTalk {
+  margin-top: var(--cpd-space-4x);
+}
+
+.bindingRow {
+  display: flex;
+  align-items: center;
+  gap: var(--cpd-space-3x);
+  margin-block: var(--cpd-space-2x);
+}
+
+.binding {
+  min-inline-size: 6em;
+  padding: var(--cpd-space-1x) var(--cpd-space-3x);
+  border: 1px solid var(--cpd-color-border-interactive-primary);
+  border-radius: var(--cpd-space-1x);
+  background-color: var(--cpd-color-bg-subtle-secondary);
+  font: var(--cpd-font-body-md-semibold);
+  text-align: center;
+}
+
+.hint,
+.releaseDelay > p {
+  color: var(--cpd-color-text-secondary);
+}
+
+.releaseDelay > label {
+  display: block;
+  margin-bottom: var(--cpd-space-1x);
+}
+
+.value {
+  font-weight: normal;
+  color: var(--cpd-color-text-secondary);
+}
