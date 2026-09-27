@@ -98,6 +98,16 @@ function createWindow() {
     void shell.openExternal(url);
   });
   // A new page will send its own push to talk settings once it has them
+  // Without this a server that can't be reached leaves an empty window
+  wc.on(
+    "did-fail-load",
+    (_event, errorCode, errorDescription, validatedURL, isMainFrame) => {
+      // -3 is a load cancelled by another navigation, not a failure
+      if (!isMainFrame || errorCode === -3 || validatedURL.startsWith("file:"))
+        return;
+      showSetup(`Couldn't open ${validatedURL} (${errorDescription}).`);
+    },
+  );
   wc.on("did-start-navigation", ({ isMainFrame, isSameDocument }) => {
     if (isMainFrame && !isSameDocument) globalPushToTalk.dispose();
   });
@@ -115,8 +125,11 @@ function loadStart() {
   else void mainWindow?.loadURL(url);
 }
 
-function showSetup() {
-  void mainWindow?.loadFile(path.join(__dirname, "setup.html"));
+/** @param {string} [error] shown on the setup page */
+function showSetup(error) {
+  void mainWindow?.loadFile(path.join(__dirname, "setup.html"), {
+    query: error ? { error } : {},
+  });
 }
 
 ipcMain.on("push-to-talk:set", (event, config) => {
@@ -126,7 +139,7 @@ ipcMain.on("push-to-talk:set", (event, config) => {
 });
 
 ipcMain.handle("setup:get", (event) =>
-  isFromSetupPage(event) ? readConfig().url ?? "" : "",
+  isFromSetupPage(event) ? elementCallUrl() ?? "" : "",
 );
 
 ipcMain.handle("setup:save", (event, rawUrl) => {
@@ -197,7 +210,7 @@ function setUpMenu() {
   const isMac = process.platform === "darwin";
   const changeUrl = {
     label: "Change Element Call Server…",
-    click: showSetup,
+    click: () => showSetup(),
   };
   Menu.setApplicationMenu(
     Menu.buildFromTemplate([

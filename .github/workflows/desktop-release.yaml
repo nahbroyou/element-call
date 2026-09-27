@@ -68,13 +68,23 @@ jobs:
       - name: Build installers
         env:
           DEFAULT_URL: ${{ vars.DEFAULT_ELEMENT_CALL_URL }}
-          CSC_LINK: ${{ matrix.name == 'macOS' && secrets.MAC_CERT_P12_BASE64 || '' }}
-          CSC_KEY_PASSWORD: ${{ matrix.name == 'macOS' && secrets.MAC_CERT_PASSWORD || '' }}
-          APPLE_ID: ${{ secrets.APPLE_ID }}
-          APPLE_APP_SPECIFIC_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+          MAC_CERT: ${{ secrets.MAC_CERT_P12_BASE64 }}
+          MAC_CERT_PASSWORD: ${{ secrets.MAC_CERT_PASSWORD }}
+          MAC_APPLE_ID: ${{ secrets.APPLE_ID }}
+          MAC_APPLE_PASSWORD: ${{ secrets.APPLE_APP_SPECIFIC_PASSWORD }}
+          MAC_APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
           TARGET: ${{ matrix.target }}
         run: |
+          # electron-builder treats a signing variable that is set but empty
+          # as a path, so only export the ones that have values.
+          if [[ "$TARGET" == "--mac" && -n "$MAC_CERT" ]]; then
+            export CSC_LINK="$MAC_CERT" CSC_KEY_PASSWORD="$MAC_CERT_PASSWORD"
+            if [[ -n "$MAC_APPLE_ID" ]]; then
+              export APPLE_ID="$MAC_APPLE_ID"
+              export APPLE_APP_SPECIFIC_PASSWORD="$MAC_APPLE_PASSWORD"
+              export APPLE_TEAM_ID="$MAC_APPLE_TEAM_ID"
+            fi
+          fi
           args=("$TARGET" --publish never)
           if [[ -n "$DEFAULT_URL" ]]; then
             args+=("-c.extraMetadata.defaultElementCallUrl=$DEFAULT_URL")

@@ -106,6 +106,8 @@
     <script>
       const input = document.getElementById("url");
       const error = document.getElementById("error");
+      const loadError = new URLSearchParams(location.search).get("error");
+      if (loadError) error.textContent = loadError;
       window.elementCallSetup.getUrl().then((url) => {
         if (url) input.value = url;
       });
