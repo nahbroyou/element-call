@@ -1,0 +1,51 @@
+{
+  "name": "element-call-desktop",
+  "productName": "Element Call",
+  "version": "0.1.0",
+  "description": "Desktop wrapper for Element Call with a system-wide push to talk shortcut",
+  "license": "AGPL-3.0-only",
+  "private": true,
+  "type": "commonjs",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "node --test test/*.test.js",
+    "dist": "electron-builder",
+    "dist:mac": "electron-builder --mac",
+    "dist:win": "electron-builder --win",
+    "dist:linux": "electron-builder --linux"
+  },
+  "dependencies": {
+    "uiohook-napi": "^1.5.5"
+  },
+  "devDependencies": {
+    "electron": "^44.0.0",
+    "electron-builder": "^26.0.0"
+  },
+  "build": {
+    "appId": "io.element.call.desktop.ptt",
+    "files": [
+      "main.js",
+      "preload.js",
+      "globalPushToTalk.js",
+      "keymap.js",
+      "setup.html"
+    ],
+    "mac": {
+      "category": "public.app-category.social-networking",
+      "hardenedRuntime": true,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist",
+      "extendInfo": {
+        "NSMicrophoneUsageDescription": "Element Call uses your microphone for voice calls.",
+        "NSCameraUsageDescription": "Element Call uses your camera for video calls."
+      }
+    },
+    "win": {
+      "target": "nsis"
+    },
+    "linux": {
+      "target": "AppImage"
+    }
+  }
+}

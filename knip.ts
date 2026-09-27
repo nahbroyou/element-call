@@ -31,6 +31,9 @@ export default {
     // Deliberately added prior to any component or business logic
     // implementation
     "src/state/ServiceInterruptionsViewModel.ts",
+    // The desktop wrapper is a separate Electron package with its own
+    // dependencies
+    "desktop/**",
   ],
   ignoreDependencies: [
     // Used in CSS

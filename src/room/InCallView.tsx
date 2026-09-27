@@ -28,6 +28,7 @@ import { useTranslation } from "react-i18next";
 import { Header, LeftNav, RightNav, RoomHeaderInfo } from "../Header";
 import { HeaderStyle, useUrlParams } from "../UrlParams";
 import { useCallViewKeyboardShortcuts } from "../useCallViewKeyboardShortcuts";
+import { usePushToTalk } from "../pushToTalk/usePushToTalk";
 import { useHostBridge } from "../HostBridge.ts";
 import { useRootElement } from "../RootElementContext";
 import { observeElementSize$ } from "../utils/elementSize";
@@ -288,12 +289,15 @@ export const InCallView: FC<InCallViewProps> = ({
   const toggleVideo = useBehavior(muteStates.video.toggle$);
   const setAudioEnabled = useBehavior(muteStates.audio.setEnabled$);
 
+  const pushToTalk = usePushToTalk(setAudioEnabled);
   useCallViewKeyboardShortcuts(
     toggleAudio,
     toggleVideo,
-    setAudioEnabled,
+    // Push to talk replaces the built-in hold-space-to-talk
+    pushToTalk.enabled ? null : setAudioEnabled,
     (reaction) => void sendReaction(reaction),
     () => void toggleRaisedHand(),
+    pushToTalk.enabled ? pushToTalk.binding : null,
   );
 
   const ringingVm = useBehavior(vm.ringingVm$);

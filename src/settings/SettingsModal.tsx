@@ -27,6 +27,7 @@ import {
 } from "./settings";
 import { PreferencesSettingsTab } from "./PreferencesSettingsTab";
 import { Slider } from "../Slider";
+import { PushToTalkSettings } from "../pushToTalk/PushToTalkSettings";
 import { DeviceSelection } from "./DeviceSelection";
 import { useTrackProcessor } from "../livekit/TrackProcessorContext";
 import {
@@ -179,6 +180,7 @@ export const SettingsModal: FC<Props> = ({
               step={0.01}
             />
           </div>
+          {!controlledAudioDevices && <PushToTalkSettings />}
         </Form>
       </>
     ),

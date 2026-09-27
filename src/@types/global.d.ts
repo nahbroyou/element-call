@@ -9,6 +9,7 @@ import { type setLogLevel as setLKLogLevel } from "livekit-client";
 
 import type { DurationFormat as PolyfillDurationFormat } from "@formatjs/intl-durationformat";
 import { type Controls } from "../controls";
+import { type DesktopBridge } from "../pushToTalk/desktopBridge";
 
 declare global {
   interface Document {
@@ -20,6 +21,8 @@ declare global {
   interface Window {
     controls: Controls;
     setLKLogLevel: typeof setLKLogLevel;
+    /** Present only when running inside the Element Call desktop wrapper. */
+    elementCallDesktop?: DesktopBridge;
   }
 
   interface HTMLElement {

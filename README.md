@@ -1,5 +1,10 @@
 # Element Call
 
+> **Fork with push to talk.** This fork adds Discord-style push to talk with a
+> rebindable key or mouse button (Settings → Audio), plus a desktop wrapper in
+> [`desktop/`](desktop) that makes the shortcut work system-wide. See
+> [docs/push_to_talk.md](docs/push_to_talk.md).
+
 [![Chat](https://img.shields.io/matrix/webrtc:matrix.org)](https://matrix.to/#/#webrtc:matrix.org)
 [![Localazy](https://img.shields.io/endpoint?url=https%3A%2F%2Fconnect.localazy.com%2Fstatus%2Felement-call%2Fdata%3Fcontent%3Dall%26title%3Dlocalazy%26logo%3Dtrue)](https://localazy.com/p/element-call)
 [![License](https://img.shields.io/github/license/element-hq/element-call)](LICENSE-AGPL-3.0)
